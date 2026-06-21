@@ -1,129 +1,143 @@
-# 🏥 Intranet Médica
+# 🏥 Atacalma - Sistema de Gestión Clínica
 
-Sistema de gestión médica completo con Next.js, React, TypeScript y Tailwind CSS.
+Una intranet completa para gestión de pacientes, citas médicas y notas de evolución en una clínica psiquiátrica.
 
-## 📋 Características Implementadas
+## ✨ Características
 
-### ✅ CRUD de Pacientes
-- Crear nuevos pacientes
-- Ver lista de pacientes
-- Editar información de pacientes
-- Eliminar pacientes
-- Validación de formularios
-- Almacenamiento en localStorage
+### 👥 Gestión de Pacientes
+- Crear, editar y eliminar pacientes
+- Registrar: nombre, fecha de nacimiento, teléfono, correo, RUT
+- Búsqueda y filtrado rápido
 - Cálculo automático de edad
-- Formateo de fechas
+
+### 📅 Gestión de Citas
+- Agendar citas médicas
+- Asignar paciente y psicólogo
+- Modalidad: Presencial u Online
+- Estados: Confirmada, Cancelada, Asistida
+- Filtrado por estado
+- Estadísticas en tiempo real
+
+### 📝 Notas de Evolución
+- Registrar sesiones de terapia
+- Documentar notas de la sesión
+- Diagnóstico y observaciones
+- Búsqueda por paciente o diagnóstico
+- Visualización completa de notas
 
 ## 🎨 Diseño
 
-- Colores **verde** como color principal (medical-green, medical-dark-green)
-- Colores **blancos** para fondos y tarjetas
-- Detalles en **marrón** (medical-brown) para acentos
-- Interfaz limpia y moderna
-- Responsive y mobile-friendly
+- **Colores principales**: Verde (principal), Blanco, Café (detalles)
+- **Interfaz moderna y limpia**
+- **Responsive para móvil y desktop**
+- **Totalmente accesible**
 
-## 📦 Stack Tecnológico
-
-- **Next.js 14** - Framework React con SSR
-- **React 18** - Librería para interfaces
-- **TypeScript** - Tipado estático
-- **Tailwind CSS** - Framework CSS utilitario
-- **PostCSS + Autoprefixer** - Procesamiento de CSS
-
-## 🚀 Instalación y Uso
+## 🚀 Instalación
 
 ### Requisitos
-- Node.js 18+ instalado
+- Node.js 18+ 
+- npm o yarn
 
-### Pasos de Instalación
+### Pasos
 
-1. **Clonar o descargar el proyecto**
-```bash
-cd intranet-medica
-```
-
-2. **Instalar dependencias**
+1. **Instala dependencias:**
 ```bash
 npm install
 ```
 
-3. **Ejecutar en desarrollo**
+2. **Inicia el servidor de desarrollo:**
 ```bash
 npm run dev
 ```
 
-4. **Abrir en navegador**
+3. **Abre en tu navegador:**
 ```
 http://localhost:3000
 ```
 
-### Compilar para producción
-```bash
-npm run build
-npm start
-```
+## 📦 Stack Tecnológico
+
+- **Next.js 14** - Framework React
+- **React 18** - Librería UI
+- **TypeScript** - Tipado estático
+- **Tailwind CSS** - Estilos
+- **LocalStorage** - Persistencia de datos
 
 ## 📁 Estructura del Proyecto
 
 ```
-intranet-medica/
-├── app/
-│   ├── layout.tsx          # Layout principal
-│   ├── page.tsx            # Página principal
-│   └── globals.css         # Estilos globales
-├── components/
-│   ├── PacienteForm.tsx    # Formulario de pacientes
-│   └── PacienteLista.tsx   # Lista de pacientes
-├── hooks/
-│   └── usePacientes.ts     # Hook para gestionar pacientes
-├── types/
-│   └── paciente.ts         # Interfaces TypeScript
-├── tailwind.config.js      # Configuración Tailwind
-├── tsconfig.json           # Configuración TypeScript
-├── next.config.js          # Configuración Next.js
-└── package.json            # Dependencias
+atacalma-intranet/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx          # Layout principal
+│   │   ├── globals.css         # Estilos globales
+│   │   ├── page.tsx            # Página de pacientes
+│   │   ├── citas/
+│   │   │   └── page.tsx        # Página de citas
+│   │   └── notas/
+│   │       └── page.tsx        # Página de notas
+│   ├── components/
+│   │   ├── Navbar.tsx          # Barra de navegación
+│   │   ├── PacienteModal.tsx   # Modal de pacientes
+│   │   ├── PacienteTable.tsx   # Tabla de pacientes
+│   │   ├── CitaModal.tsx       # Modal de citas
+│   │   ├── CitaTable.tsx       # Tabla de citas
+│   │   ├── NotaEvoluccionModal.tsx   # Modal de notas
+│   │   ├── NotaEvoluccionTable.tsx   # Tabla de notas
+│   │   └── NotaViewModal.tsx   # Vista detallada de nota
+│   ├── types/
+│   │   └── index.ts            # Tipos TypeScript
+│   └── data/
+│       └── initialData.ts      # Datos iniciales
+├── tailwind.config.js          # Configuración Tailwind
+├── tsconfig.json               # Configuración TypeScript
+└── next.config.js              # Configuración Next.js
 ```
 
-## 🗄️ Almacenamiento de Datos
+## 💾 Almacenamiento de Datos
 
-Actualmente, los datos se almacenan en **localStorage** del navegador. Para pasar a una base de datos real (como MongoDB, PostgreSQL, etc.), necesitarías:
+Los datos se guardan en **localStorage** del navegador. Son persistentes mientras no limpies la caché.
 
-1. Crear API routes en `app/api/`
-2. Conectar una base de datos
-3. Cambiar los hooks para usar fetch en lugar de localStorage
+**Claves utilizadas:**
+- `pacientes` - Lista de pacientes
+- `citas` - Lista de citas médicas
+- `notas` - Lista de notas de evolución
 
-## 📝 Campos de Paciente
+## 🔧 Comandos
 
-- **Nombre**: Completo del paciente
-- **Fecha de Nacimiento**: Para calcular la edad
-- **Teléfono**: Contacto del paciente
-- **Correo**: Email del paciente
-- **RUT**: Documento de identidad
+```bash
+# Desarrollo
+npm run dev
 
-## 🔄 Próximas Funcionalidades
+# Build para producción
+npm run build
 
-- [ ] CRUD de Citas Médicas
-- [ ] CRUD de Notas de Evaluación
-- [ ] Búsqueda y filtrado de pacientes
-- [ ] Exportar datos a PDF/Excel
-- [ ] Sistema de autenticación
-- [ ] Base de datos persistente
+# Iniciar servidor de producción
+npm start
+
+# Lint del código
+npm run lint
+```
+
+## 🎯 Próximas Mejoras
+
+- [ ] Integración con base de datos (MongoDB, PostgreSQL)
+- [ ] Autenticación de usuarios
+- [ ] Exportar reportes (PDF/Excel)
+- [ ] Calendario visual de citas
 - [ ] Notificaciones por email
-- [ ] Calendario de citas
+- [ ] Historial médico completo
+- [ ] Análisis y gráficos
+- [ ] Facturación integrada
 
-## 🎨 Colores Personalizados
+## 📝 Licencia
 
-En `tailwind.config.js` están definidos:
-- `medical-green`: #10b981 (color principal)
-- `medical-dark-green`: #059669 (color oscuro)
-- `medical-light-green`: #d1fae5 (color claro)
-- `medical-brown`: #92400e (detalles)
-- `medical-light-brown`: #fcd34d (acentos)
+Este proyecto está disponible para uso académico y profesional.
 
-## 🤝 Contribuciones
+## 👨‍💻 Soporte
 
-Este es un proyecto base que puedes personalizar y expandir según tus necesidades.
+Para problemas o sugerencias, contacta al equipo de desarrollo.
 
-## 📄 Licencia
+---
 
-Proyecto de demostración - Libre para uso personal y educativo.
+**Hecho con ❤️ para Atacalma**

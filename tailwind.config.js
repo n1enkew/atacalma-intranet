@@ -1,18 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
-        'medical-green': '#10b981',
-        'medical-dark-green': '#059669',
-        'medical-light-green': '#d1fae5',
-        'medical-brown': '#92400e',
-        'medical-light-brown': '#fcd34d',
+        atacalma: {
+          green: '#10b981',
+          'green-light': '#d1fae5',
+          'green-dark': '#059669',
+          white: '#ffffff',
+          brown: '#92400e',
+          'brown-light': '#b45309',
+          'gray-light': '#f9fafb',
+          'gray-dark': '#374151',
+        },
       },
     },
   },
