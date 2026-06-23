@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import PacienteModal from '@/components/PacienteModal';
 import PacienteTable from '@/components/PacienteTable';
+import { useAuth } from '@/components/AuthProvider';
 import { Paciente } from '@/types';
 import { PACIENTES_INICIALES } from '@/data/initialData';
 
 export default function PacientesPage() {
+  const { isAuthenticated, openLogin } = useAuth();
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaciente, setEditingPaciente] = useState<Paciente | undefined>();
@@ -24,6 +26,11 @@ export default function PacientesPage() {
   }, []);
 
   const handleSavePaciente = (paciente: Paciente) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+
     if (editingPaciente) {
       const updated = pacientes.map(p => (p.id === paciente.id ? paciente : p));
       setPacientes(updated);
@@ -39,17 +46,29 @@ export default function PacientesPage() {
   };
 
   const handleDeletePaciente = (id: string) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     const updated = pacientes.filter(p => p.id !== id);
     setPacientes(updated);
     localStorage.setItem('pacientes', JSON.stringify(updated));
   };
 
   const handleEditPaciente = (paciente: Paciente) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     setEditingPaciente(paciente);
     setIsModalOpen(true);
   };
 
   const handleNewPaciente = () => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     setEditingPaciente(undefined);
     setIsModalOpen(true);
   };
@@ -130,6 +149,7 @@ export default function PacientesPage() {
         onSave={handleSavePaciente}
         paciente={editingPaciente}
       />
+
     </div>
   );
 }

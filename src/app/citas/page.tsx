@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/components/AuthProvider';
 import CitaModal from '@/components/CitaModal';
 import CitaTable from '@/components/CitaTable';
 import { Cita, Paciente, Psicologo } from '@/types';
 import { CITAS_INICIALES, PACIENTES_INICIALES, PSICOLOGOS } from '@/data/initialData';
 
 export default function CitasPage() {
+  const { isAuthenticated, openLogin } = useAuth();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,6 +35,11 @@ export default function CitasPage() {
   }, []);
 
   const handleSaveCita = (cita: Cita) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+
     if (editingCita) {
       const updated = citas.map(c => (c.id === cita.id ? cita : c));
       setCitas(updated);
@@ -48,17 +55,30 @@ export default function CitasPage() {
   };
 
   const handleDeleteCita = (id: string) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+
     const updated = citas.filter(c => c.id !== id);
     setCitas(updated);
     localStorage.setItem('citas', JSON.stringify(updated));
   };
 
   const handleEditCita = (cita: Cita) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     setEditingCita(cita);
     setIsModalOpen(true);
   };
 
   const handleNewCita = () => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     setEditingCita(undefined);
     setIsModalOpen(true);
   };
@@ -79,13 +99,15 @@ export default function CitasPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-atacalma-green mb-2">
-            Gestión de Citas Médicas
-          </h1>
-          <p className="text-gray-600">
-            Administra las citas y sesiones de los pacientes
-          </p>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-atacalma-green mb-2">
+              Gestión de Citas Médicas
+            </h1>
+            <p className="text-gray-600">
+              Administra las citas y sesiones de los pacientes
+            </p>
+          </div>
         </div>
 
         {/* Controls */}
@@ -154,6 +176,7 @@ export default function CitasPage() {
         pacientes={pacientes}
         psicologos={PSICOLOGOS}
       />
+
     </div>
   );
 }

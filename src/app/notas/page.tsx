@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/components/AuthProvider';
 import NotaEvoluccionModal from '@/components/NotaEvoluccionModal';
 import NotaViewModal from '@/components/NotaViewModal';
 import NotaEvoluccionTable from '@/components/NotaEvoluccionTable';
@@ -9,6 +10,7 @@ import { NotaEvolucion, Paciente } from '@/types';
 import { NOTAS_INICIALES, PACIENTES_INICIALES, PSICOLOGOS } from '@/data/initialData';
 
 export default function NotasPage() {
+  const { isAuthenticated, openLogin } = useAuth();
   const [notas, setNotas] = useState<NotaEvolucion[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,6 +38,11 @@ export default function NotasPage() {
   }, []);
 
   const handleSaveNota = (nota: NotaEvolucion) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+
     if (editingNota) {
       const updated = notas.map(n => (n.id === nota.id ? nota : n));
       setNotas(updated);
@@ -51,12 +58,21 @@ export default function NotasPage() {
   };
 
   const handleDeleteNota = (id: string) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+
     const updated = notas.filter(n => n.id !== id);
     setNotas(updated);
     localStorage.setItem('notas', JSON.stringify(updated));
   };
 
   const handleEditNota = (nota: NotaEvolucion) => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     setEditingNota(nota);
     setIsModalOpen(true);
   };
@@ -67,6 +83,10 @@ export default function NotasPage() {
   };
 
   const handleNewNota = () => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
     setEditingNota(undefined);
     setIsModalOpen(true);
   };
@@ -94,13 +114,15 @@ export default function NotasPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-atacalma-green mb-2">
-            Notas de Evolución
-          </h1>
-          <p className="text-gray-600">
-            Registra y consulta las notas de las sesiones de cada paciente
-          </p>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-atacalma-green mb-2">
+              Notas de Evolución
+            </h1>
+            <p className="text-gray-600">
+              Registra y consulta las notas de las sesiones de cada paciente
+            </p>
+          </div>
         </div>
 
         {/* Controls */}
@@ -174,6 +196,7 @@ export default function NotasPage() {
         pacientes={pacientes}
         psicologos={PSICOLOGOS}
       />
+
     </div>
   );
 }
