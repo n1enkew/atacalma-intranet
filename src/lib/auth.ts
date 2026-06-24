@@ -1,14 +1,21 @@
+import bcrypt from 'bcryptjs';
+
 // Keys de almacenamiento local para los datos de autenticación.
 const USER_ACCOUNTS_KEY = 'userAccounts';
 const LOGGED_USER_KEY = 'loggedInUser';
 const SHOPPING_LIST_KEY = 'shoppingList';
 
+// Salt rounds determina cuántas veces se aplica el algoritmo de hashing.
+// Más rondas = mayor seguridad, pero también mayor costo de procesamiento.
+const SALT_ROUNDS = 10;
+
 interface UserAccount {
-  username: string;
-  password: string;
+  // Guardamos hashes en lugar de texto plano para mejorar la seguridad.
+  usernameHash: string;
+  passwordHash: string;
 }
 
-const defaultAdminAccount: UserAccount = {
+const defaultAdminAccount = {
   username: 'admin',
   password: 'admin123',
 };
@@ -17,21 +24,80 @@ function isBrowser() {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
-function getStoredAccounts(): UserAccount[] {
-  if (!isBrowser()) return [defaultAdminAccount];
+function normalizeUsername(username: string) {
+  // Normalizar el nombre de usuario evita diferencias entre mayúsculas y espacios.
+  return username.trim().toLowerCase();
+}
 
-  // Lee las cuentas guardadas en localStorage.
+function hashValue(value: string) {
+  // bcrypt.hashSync usa salt internamente y devuelve un hash seguro.
+  // El valor original no puede reconstruirse a partir del hash.
+  return bcrypt.hashSync(value, SALT_ROUNDS);
+}
+
+function verifyHash(value: string, hash: string) {
+  // bcrypt.compareSync compara un valor en texto plano con su hash.
+  // Si coinciden, significa que el valor original generó ese hash.
+  return bcrypt.compareSync(value, hash);
+}
+
+function createHashedAccount(username: string, password: string): UserAccount {
+  return {
+    usernameHash: hashValue(normalizeUsername(username)),
+    passwordHash: hashValue(password),
+  };
+}
+
+function getStoredAccounts(): UserAccount[] {
+  if (!isBrowser()) return [createHashedAccount(defaultAdminAccount.username, defaultAdminAccount.password)];
+
   const raw = window.localStorage.getItem(USER_ACCOUNTS_KEY);
+  const defaultAccount = createHashedAccount(defaultAdminAccount.username, defaultAdminAccount.password);
   if (!raw) {
-    window.localStorage.setItem(USER_ACCOUNTS_KEY, JSON.stringify([defaultAdminAccount]));
-    return [defaultAdminAccount];
+    saveStoredAccounts([defaultAccount]);
+    return [defaultAccount];
   }
 
   try {
-    return JSON.parse(raw) as UserAccount[];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error('Invalid accounts format');
+
+    const accounts = parsed.map((account) => {
+      // Si ya tenemos cuentas en formato hashed, las usamos directamente.
+      if (
+        account &&
+        typeof account === 'object' &&
+        'usernameHash' in account &&
+        'passwordHash' in account
+      ) {
+        return {
+          usernameHash: String((account as any).usernameHash),
+          passwordHash: String((account as any).passwordHash),
+        };
+      }
+
+      // Si vienen cuentas antiguas con usuario/contraseña en texto plano,
+      // las convertimos inmediatamente a hashes y las guardamos de nuevo.
+      if (
+        account &&
+        typeof account === 'object' &&
+        'username' in account &&
+        'password' in account
+      ) {
+        return createHashedAccount(
+          String((account as any).username),
+          String((account as any).password),
+        );
+      }
+
+      throw new Error('Invalid account entry');
+    });
+
+    saveStoredAccounts(accounts);
+    return accounts;
   } catch {
-    window.localStorage.setItem(USER_ACCOUNTS_KEY, JSON.stringify([defaultAdminAccount]));
-    return [defaultAdminAccount];
+    saveStoredAccounts([defaultAccount]);
+    return [defaultAccount];
   }
 }
 
@@ -42,39 +108,59 @@ function saveStoredAccounts(accounts: UserAccount[]) {
 
 export function ensureAdminAccount() {
   // Garantiza que siempre exista al menos una cuenta admin por defecto.
+  // Aquí buscamos el hash del nombre de usuario admin, no el texto "admin" directamente.
   if (!isBrowser()) return;
   const accounts = getStoredAccounts();
-  const hasAdmin = accounts.some((account) => account.username === defaultAdminAccount.username);
+  const hasAdmin = accounts.some((account) =>
+    verifyHash(defaultAdminAccount.username, account.usernameHash),
+  );
   if (!hasAdmin) {
-    saveStoredAccounts([defaultAdminAccount, ...accounts]);
+    saveStoredAccounts([createHashedAccount(defaultAdminAccount.username, defaultAdminAccount.password), ...accounts]);
   }
 }
 
 export function loginUser(username: string, password: string) {
   if (!isBrowser()) return false;
+
+  const normalized = normalizeUsername(username);
+
+  // Cargamos todas las cuentas y buscamos la que coincida con el usuario y contraseña.
+  // Como guardamos hashes, no podemos comparar texto directo; usamos verifyHash.
   const accounts = getStoredAccounts();
-  const match = accounts.find((account) => account.username === username && account.password === password);
+  const match = accounts.find(
+    (account) =>
+      verifyHash(normalized, account.usernameHash) && verifyHash(password, account.passwordHash),
+  );
+
   if (match) {
-    window.localStorage.setItem(LOGGED_USER_KEY, username);
+    // Guardamos sólo el nombre normalizado en sesión, no el hash de la contraseña.
+    window.localStorage.setItem(LOGGED_USER_KEY, normalized);
     return true;
   }
+
   return false;
 }
 
 export function registerUser(username: string, password: string) {
   if (!isBrowser()) return { success: false, message: 'Navegador no soportado' };
 
-  const normalized = username.trim().toLowerCase();
+  const normalized = normalizeUsername(username);
   if (!normalized || !password) {
     return { success: false, message: 'Usuario y contraseña son obligatorios' };
   }
 
   const accounts = getStoredAccounts();
-  if (accounts.some((account) => account.username === normalized)) {
+  if (accounts.some((account) => verifyHash(normalized, account.usernameHash))) {
     return { success: false, message: 'El nombre de usuario ya existe' };
   }
 
-  const nextAccounts = [...accounts, { username: normalized, password }];
+  // Al registrar, convertimos el nombre de usuario y la contraseña a hashes.
+  // Guardar el hash es lo correcto; nunca almacenamos la contraseña en texto plano.
+  const nextAccounts = [
+    ...accounts,
+    createHashedAccount(normalized, password),
+  ];
+
   saveStoredAccounts(nextAccounts);
   window.localStorage.setItem(LOGGED_USER_KEY, normalized);
   return { success: true, message: 'Cuenta creada correctamente' };
