@@ -7,6 +7,7 @@ import { ensureAdminAccount, getLoggedInUser, loginUser, logoutUser, registerUse
 interface AuthContextValue {
   loggedUser: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   openLogin: () => void;
   openRegister: () => void;
   closeLogin: () => void;
@@ -79,10 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoggedUser(null);
   };
 
+  // Solo el usuario admin debe poder ver datos sensibles.
+  // `isAdmin` se usa para bloquear el acceso completo a pacientes, citas y notas.
+  const isAdmin = loggedUser === 'admin';
+
   const value = useMemo(
     () => ({
       loggedUser,
       isAuthenticated: !!loggedUser,
+      isAdmin,
       openLogin,
       openRegister,
       closeLogin,
@@ -90,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
     }),
-    [loggedUser],
+    [loggedUser, isAdmin],
   );
 
   return (

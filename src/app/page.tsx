@@ -9,7 +9,9 @@ import { Paciente } from '@/types';
 import { PACIENTES_INICIALES } from '@/data/initialData';
 
 export default function PacientesPage() {
-  const { isAuthenticated, openLogin } = useAuth();
+  const { isAuthenticated, isAdmin, openLogin } = useAuth();
+  // isAuthenticated controla si hay sesión abierta.
+  // isAdmin indica si el usuario conectado es el administrador.
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaciente, setEditingPaciente] = useState<Paciente | undefined>();
@@ -78,6 +80,31 @@ export default function PacientesPage() {
     p.rut.includes(searchTerm) ||
     p.correo.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Si el usuario no es admin, ocultamos todos los datos y mostramos un mensaje.
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-atacalma-gray-light">
+        <Navbar currentPage="pacientes" />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="rounded-3xl bg-white p-10 shadow-lg text-center">
+            <h1 className="text-3xl font-bold text-atacalma-green mb-4">
+              Acceso restringido
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Debes iniciar sesión como admin para ver los datos de los pacientes.
+            </p>
+            <button
+              onClick={openLogin}
+              className="px-6 py-3 bg-atacalma-green text-white rounded-lg hover:bg-atacalma-green-dark transition"
+            >
+              {isAuthenticated ? 'Iniciar sesión como admin' : 'Iniciar sesión'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-atacalma-gray-light">

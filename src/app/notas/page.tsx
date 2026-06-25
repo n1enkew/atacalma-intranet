@@ -10,7 +10,8 @@ import { NotaEvolucion, Paciente } from '@/types';
 import { NOTAS_INICIALES, PACIENTES_INICIALES, PSICOLOGOS } from '@/data/initialData';
 
 export default function NotasPage() {
-  const { isAuthenticated, openLogin } = useAuth();
+  const { isAuthenticated, isAdmin, openLogin } = useAuth();
+  // `isAdmin` es necesario para que el contenido sensible de las notas no sea visible.
   const [notas, setNotas] = useState<NotaEvolucion[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,6 +108,31 @@ export default function NotasPage() {
     paciente,
     notas: filteredNotas.filter(n => n.pacienteId === paciente.id),
   })).filter(group => group.notas.length > 0);
+
+  // Si no es admin, ocultamos las notas de evolución y mostramos la solicitud de inicio de sesión.
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-atacalma-gray-light">
+        <Navbar currentPage="notas" />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="rounded-3xl bg-white p-10 shadow-lg text-center">
+            <h1 className="text-3xl font-bold text-atacalma-green mb-4">
+              Acceso restringido
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Debes iniciar sesión como admin para ver las notas de evolución.
+            </p>
+            <button
+              onClick={openLogin}
+              className="px-6 py-3 bg-atacalma-green text-white rounded-lg hover:bg-atacalma-green-dark transition"
+            >
+              {isAuthenticated ? 'Iniciar sesión como admin' : 'Iniciar sesión'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-atacalma-gray-light">

@@ -9,7 +9,8 @@ import { Cita, Paciente, Psicologo } from '@/types';
 import { CITAS_INICIALES, PACIENTES_INICIALES, PSICOLOGOS } from '@/data/initialData';
 
 export default function CitasPage() {
-  const { isAuthenticated, openLogin } = useAuth();
+  const { isAuthenticated, isAdmin, openLogin } = useAuth();
+  // `isAdmin` marca si el usuario actual es admin. Solo admin puede administrar citas.
   const [citas, setCitas] = useState<Cita[]>([]);
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,6 +87,32 @@ export default function CitasPage() {
   const filteredCitas = citas.filter(c =>
     filtroEstado === 'todas' ? true : c.estado === filtroEstado
   );
+
+  // Bloqueo de acceso para proteger la información de citas.
+  // Solo el administrador puede ver y editar esta página.
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-atacalma-gray-light">
+        <Navbar currentPage="citas" />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="rounded-3xl bg-white p-10 shadow-lg text-center">
+            <h1 className="text-3xl font-bold text-atacalma-green mb-4">
+              Acceso restringido
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Debes iniciar sesión como admin para ver y administrar las citas.
+            </p>
+            <button
+              onClick={openLogin}
+              className="px-6 py-3 bg-atacalma-green text-white rounded-lg hover:bg-atacalma-green-dark transition"
+            >
+              {isAuthenticated ? 'Iniciar sesión como admin' : 'Iniciar sesión'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const estadosCounts = {
     confirmada: citas.filter(c => c.estado === 'confirmada').length,
